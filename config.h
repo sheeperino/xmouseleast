@@ -1,6 +1,9 @@
 // uncomment if you want to grab a specific keyboard id
 // #define GRABBED_KB 16
 
+// whether debug output should be shown
+#define DEBUG False
+
 // mouse acceleration (set to 1 for no acceleration)
 #define default_accel 0.111 
 // mouse friction (set to 0 for no friction)
