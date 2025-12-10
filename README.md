@@ -16,7 +16,7 @@ Example (NOTE: ISO_Level3_Shift can be replaced with any modifier):
 ~ISO_Level3_Shift: 
     xmouseleast    
 ```
-Then add `ISO_Level3_Shift` to `modifiers` in `config.h`, so it won't get released when running the program.
+Then add `ISO_Level3_Shift` to `modifiers` in `config.h`, so it won't get released when running the program.  
 Finally add a `QUIT` binding, in `bindings`, mapped to `ISO_Level3_Shift`.
 
 ## credits
