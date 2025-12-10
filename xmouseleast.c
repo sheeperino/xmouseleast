@@ -108,8 +108,8 @@ int main() {
 
   release_keys();
   #ifdef GRABBED_KB
-      XIGrabDevice(dpy, GRABBED_KB, root, CurrentTime, None,
-                   GrabModeAsync, GrabModeAsync, False, &mask); 
+    XIGrabDevice(dpy, GRABBED_KB, root, CurrentTime, None,
+                 GrabModeAsync, GrabModeAsync, False, &mask); 
   #else
     grab_keyboard(mask);
     if (n_grabbed_ids == 0) {
@@ -273,6 +273,7 @@ void handle_key(KeyCode keycode, Bool is_press) {
   for (size_t i = 0; i < LENGTH(modifiers); ++i) {
     if (modifiers[i] != keysym) continue;
     XTestFakeKeyEvent(dpy, keycode, is_press, CurrentTime);
+    XSync(dpy, True);
   }
   for (size_t i = 0; i < LENGTH(bindings); ++i) {
     GenericBinding b = bindings[i];
