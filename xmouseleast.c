@@ -223,7 +223,8 @@ void genericevent(XEvent *e) {
       code = dev->detail;
       is_press = (e->xcookie.evtype == XI_RawKeyPress);
       #if defined(DEBUG) && DEBUG == True
-        printf("event %d %d\n", code, is_press);
+        KeySym keysym = XkbKeycodeToKeysym(dpy, code, 0, 0);
+        printf("event %d (%s) %d\n", code, XKeysymToString(keysym), is_press);
       #endif
       handle_key(code, is_press);
       break;
