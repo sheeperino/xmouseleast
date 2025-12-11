@@ -125,7 +125,7 @@ int main() {
       .fd = ConnectionNumber(dpy),
       .events = POLLIN,
     };
-    int pending = (XPending(dpy) > 0 || poll(&pfd, 1, -1) > 0);
+    int pending = (XPending(dpy) > 0 || poll(&pfd, 1, 1) > 0);
 
     if (!running) break;
     if (!pending) continue;
