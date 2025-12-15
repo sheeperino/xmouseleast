@@ -8,8 +8,10 @@
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xproto.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/XTest.h>
+#include <X11/extensions/xtestproto.h>
 
 #define LENGTH(X) (sizeof X / sizeof X[0])
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -70,8 +72,10 @@ static struct {
 
 void x_init();
 void release_keys();
+void release_buttons();
 void grab_keyboard(XIEventMask mask);
 void ungrab_keyboard(); 
+int errorhandler(Display *dpy, XErrorEvent *ev);
 void genericevent(XEvent *e);
 void *move_loop(void *_);
 void move_relative(float x, float y);
@@ -107,6 +111,7 @@ int main() {
   XISelectEvents(dpy, root, &mask, 1);
 
   release_keys();
+  release_buttons();
   #ifdef GRABBED_KB
     XIGrabDevice(dpy, GRABBED_KB, root, CurrentTime, None,
                  GrabModeAsync, GrabModeAsync, False, &mask); 
@@ -135,6 +140,7 @@ int main() {
   }
 
 defer:
+  release_buttons();
   #ifdef GRABBED_KB
     XIUngrabDevice(dpy, GRABBED_KB, CurrentTime);
   #else
@@ -146,6 +152,7 @@ defer:
 }
 
 void x_init() {
+  XSetErrorHandler(errorhandler);
   dpy = XOpenDisplay(NULL);
   if (dpy == NULL) {
     fprintf(stderr, "Couldn't open X Display\n");
@@ -179,6 +186,15 @@ void release_keys() {
   XSync(dpy, False);
 }
 
+// likewise, release mouse buttons for unwanted behavior
+void release_buttons() {
+  // iterate through an arbitrary number of buttons because i don't wanna query the pointer device
+  // so we'll just ignore the error
+  for (int i = 0; i < 50; ++i) {
+    XTestFakeButtonEvent(dpy, i, False, CurrentTime);
+  }
+}
+
 void grab_keyboard(XIEventMask mask) {
   XIDeviceInfo *devs;
   int n;
@@ -207,6 +223,18 @@ void ungrab_keyboard() {
     XIUngrabDevice(dpy, grabbed_ids[i], CurrentTime);
     printf("Ungrabbed id %d\n", grabbed_ids[i]);
   }
+}
+
+int errorhandler(Display *dpy, XErrorEvent *ev) {
+  if (ev->error_code == 2 && ev->request_code == 132 && ev->minor_code == X_XTestFakeInput)
+    return 0;
+
+  char text[1024];
+  XGetErrorText(dpy, ev->error_code, text, 1024);
+  fprintf(stderr, "ERROR: %s\n\terror = %d\n\tmajor = %d\n\tminor = %d\n\tserial = %zu\n",
+          text, ev->error_code, ev->request_code, ev->minor_code, ev->serial);
+  running = 0;
+  return 1;
 }
 
 void genericevent(XEvent *e) {
