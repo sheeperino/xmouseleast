@@ -296,16 +296,18 @@ void *move_loop(void *_) {
 void move_relative(float x, float y) {
   mouse.x += x;
   mouse.y += y;
-  XWarpPointer(dpy, None, root, 0, 0, 0, 0, (int)mouse.x, (int)mouse.y);
+  XTestFakeMotionEvent(dpy, -1, (int)mouse.x, (int)mouse.y, CurrentTime);
   XFlush(dpy);
 }
 
 void handle_key(KeyCode keycode, Bool is_press) {
   KeySym keysym = XkbKeycodeToKeysym(dpy, keycode, 0, 0);
   for (size_t i = 0; i < LENGTH(modifiers); ++i) {
-    if (modifiers[i] != keysym) continue;
-    XTestFakeKeyEvent(dpy, keycode, is_press, CurrentTime);
-    XSync(dpy, True);
+    if (modifiers[i] == keysym) {
+      XTestFakeKeyEvent(dpy, keycode, is_press, CurrentTime);
+      XSync(dpy, True);
+      break;
+    }
   }
   for (size_t i = 0; i < LENGTH(bindings); ++i) {
     GenericBinding b = bindings[i];
